@@ -17,9 +17,9 @@ void app_main(void)
 {
     printf("Hello world!\n");
     // wifi_unit_demo();
-    // wifi_connect();
-    // gpio_init();
-    // node_entry();
+    wifi_connect();
+    gpio_init();
+    node_entry();
     // gpio_control_test();
-    ble_entry();
+    // ble_entry();
 }

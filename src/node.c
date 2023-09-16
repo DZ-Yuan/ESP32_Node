@@ -42,6 +42,8 @@ int bcast_sock = -1;
 int lcc_sock = -1;
 
 void gpio_control(int pin, int lv);
+void store_gpio_val(uint32_t *data);
+uint64_t get_gpio_mask();
 
 void send_announcement()
 {
@@ -498,6 +500,16 @@ void conn_cloud()
     msg[4] = (uint8_t)DEVICE_ID;
     // dev name
     memcpy(msg + 5, dev_name, sizeof(dev_name));
+    // gpio mask (only need 4 byte for now)
+    uint64_t gpio_mask = get_gpio_mask();
+    memcpy(msg + 9, &gpio_mask, 4);
+    // gpio val (only need 4 byte for now)
+    uint32_t gpio_val = 0;
+    store_gpio_val(&gpio_val);
+    memcpy(msg + 13, &gpio_val, sizeof(gpio_val));
+
+    printf("Check gpio_mask: %llu\n", gpio_mask);
+    printf("Check gpio_val: %lu\n", gpio_val);
 
     while (1)
     {

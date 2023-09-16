@@ -15,6 +15,8 @@
 #include "freertos/queue.h"
 #include "driver/gpio.h"
 
+#include "util.h"
+
 /**
  * Brief:
  * This test code shows how to configure gpio and how to use gpio interrupt.
@@ -49,6 +51,8 @@
 #define GPIO_OUTPUT_PIN_SEL (1ULL << GPIO_OUTPUT_IO_18 | 1ULL << GPIO_OUTPUT_IO_19 | 1ULL << GPIO_OUTPUT_IO_2)
 
 static QueueHandle_t gpio_evt_queue = NULL;
+// zero-initialize the config structure.
+static gpio_config_t io_conf = {};
 
 static void IRAM_ATTR gpio_isr_handler(void *arg)
 {
@@ -66,6 +70,27 @@ static void gpio_task_example(void *arg)
             printf("GPIO[%" PRIu32 "] intr, val: %d\n", io_num, gpio_get_level(io_num));
         }
     }
+}
+
+void store_gpio_val(uint32_t *data)
+{
+    uint64_t gpio_mask = io_conf.pin_bit_mask;
+    int size = sizeof(uint64_t) * 8;
+
+    uint64_t mask = 1;
+    for (int i = 0; i < size; i++)
+    {
+        if ((mask << i & gpio_mask))
+        {
+            int val = gpio_get_level(i);
+            set_bit_value(data, i, val);
+        }
+    }
+}
+
+uint64_t get_gpio_mask()
+{
+    return io_conf.pin_bit_mask;
 }
 
 void gpio_control(int pin, int lv)
@@ -104,8 +129,6 @@ void gpio_control_test()
 
 void gpio_init()
 {
-    // zero-initialize the config structure.
-    gpio_config_t io_conf = {};
     // disable interrupt
     io_conf.intr_type = GPIO_INTR_DISABLE;
     // set as output mode
